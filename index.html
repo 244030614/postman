@@ -1,0 +1,194 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="../ajax_test/mui.min.css">
+		<script src="../ajax_test/vue.min.js"></script>
+        <script src="../ajax_test/mui.min.js"></script>
+        <script src="../ajax_test/jquery.min.js"></script>
+        <style>
+        	.mui-btn--fab.mui-btn--small {
+			    width: 28px;
+			    height: 27px;
+			    line-height: 28px;
+			    padding-left: 10px;
+			    margin-top: 33px;
+			}
+			.mui-btn--primary.mui-btn--flat{
+				border: 1px solid #2196f3;
+			}
+        </style>
+	</head>
+	<body>  
+		<div class="mui-row">		
+			<div id=url class="mui-textfield  mui-col-md-6 mui-col-md-offset-3">
+				<b>URL</b>
+				<input type="text" placeholder="URL" v-model="uri" required>
+			</div>
+			<div  class="mui-textfield  mui-col-md-6 mui-col-md-offset-3">
+				
+				<button id="post" class="mui-btn mui-btn--primary" v-bind:class="{ '': isActive, 'mui-btn--flat': noAct }" v-on:click="pchange"><b>POST</b></button>
+ 				<button id="get" class="mui-btn mui-btn--primary"  v-bind:class="{ '': isActive, 'mui-btn--flat': noAct }" v-on:click="gchange"><b>GET</b></button>
+			</div>
+			<div >
+
+ 
+
+				<div id="app" class="del_parent mui-col-md-6 mui-col-md-offset-3" >
+					<button  class="mui-btn mui-btn--primary" v-on:click="addToList()">Add param</button>		
+					<div class="mui-row" v-for='(val, index) in values' >
+						<div class="mui-col-md-5 mui-textfield"><b>KEY</b><input type="text" placeholder="KEY" v-model="val.key"></div>
+						<div class="mui-col-md-5 mui-textfield"><b>VALUE:</b><input type="text" placeholder="VALUE" v-model="val.value"></div>
+						<button class="del_btn mui-col-md-2 mui-btn mui-btn--small mui-btn--danger mui-btn--fab" v-on:click="removeList(index)">x</button>
+					</div>			
+				</div>
+
+			</div>			
+			<div  class="mui-textfield  mui-col-md-6 mui-col-md-offset-3">
+				<button id="send" class="mui-btn mui-btn--primary" v-on:click="doajax">Send</button>
+			</div>
+			<div id="data" class="mui-textfield mui-col-md-6 mui-col-md-offset-3">
+			    <ul class="mui-tabs__bar">
+				  <li class="mui--is-active"><a data-mui-toggle="tab" data-mui-controls="pane-events-1">ORG</a></li>
+				  <li><a data-mui-toggle="tab" data-mui-controls="pane-events-2">JSON_DECODE</a></li>
+				</ul>
+				<div class="mui-tabs__pane mui--is-active mui-textfield " id="pane-events-1">
+					<b>RESPONSE:</b>
+				    <textarea id="return_msg">{{res}}</textarea>
+				</div>
+				<div class="mui-tabs__pane mui-textfield " id="pane-events-2">
+					<b>RESPONSE(JSON_DECODE):</b>
+				    <textarea id="return_msg_decode">{{decode}}</textarea>
+				</div>				
+				<script>
+				  // get toggle elements
+				  var toggleEls = document.querySelectorAll('[data-mui-controls^="pane-events-"]');
+
+				  function logFn(ev) {
+				    var s = '[' + ev.type + ']';
+				    s += ' paneId: ' + ev.paneId;
+				    s += ' relatedPaneId: ' + ev.relatedPaneId;
+				    // console.log(s);
+				  }
+				  // attach event handlers
+				  for (var i=0; i < toggleEls.length; i++) {
+				    toggleEls[i].addEventListener('mui.tabs.showstart', logFn);
+				    toggleEls[i].addEventListener('mui.tabs.showend', logFn);
+				    toggleEls[i].addEventListener('mui.tabs.hidestart', logFn);
+				    toggleEls[i].addEventListener('mui.tabs.hideend', logFn);
+				  }
+				</script>
+			</div>
+		</div>
+		<script type="text/javascript">
+
+var url = new Vue({
+	el:'#url',
+	data:{
+		uri : '',
+	}
+})
+var param = new Vue({ 
+	el: '#app', 
+	data: { 
+		values: [{key:'',value:''}] 
+	}, 
+	methods: { 
+	addToList: function () {
+		this.values.push({key: '',value:''}); 
+	}, 
+	removeList: function (index) {
+		this.values.splice(index, 1); 
+	} 
+	} 
+	}) 
+var get = new Vue({
+	el:"#get",
+	data: {
+	  isActive: true,
+	  noAct: false
+	},
+	methods:{
+		gchange:function(){
+			if(get.isActive==true){
+				get.isActive=false;
+				get.noAct = true;
+				post.isActive=true;
+				post.noAct = false;
+			}else{
+				get.isActive=true;
+				get.noAct = false;
+				post.isActive=false;
+				post.noAct = true;
+			}
+
+		}
+	}
+});
+var post = new Vue({
+	el:"#post",
+	data: {
+	  isActive: false,
+	  noAct: true
+	},
+	methods:{
+		pchange:function(){
+			if(post.isActive==true){
+				get.isActive=true;
+				get.noAct = false;
+				post.isActive=false;
+				post.noAct = true;
+			}else{
+				get.isActive=false;
+				get.noAct = true;
+				post.isActive=true;
+				post.noAct = false;
+			}
+		}
+	}
+});
+
+
+var send = new Vue({
+	el:'#send',
+	methods:{
+		doajax:function(){
+			if(get.isActive=true){
+				var str = url.uri;
+				for(var key in param.values){
+					if(param.values[key]['key']){
+						str = str+'&'+param.values[key]['key']+'='+param.values[key]['value'];					
+					}
+				}
+				$.getJSON(str,function(res){
+					response.res = res;
+					response.decode = eval('('+res+')');
+				})
+			}else{
+				var str = url.uri;
+				var substr = '{';
+				for(var key in param.values){
+					substr = substr+param.values[key]['key']+':'+param.values[key]['value']+',';					
+				}
+				substr = substr+'}';
+				$.post(str,substr,function(res){
+					response.res = res;
+					response.decode = eval('('+res+')');
+				})
+			}
+
+		}
+	}
+});
+var response = new Vue({
+	el:"#data",
+	data:{
+		res:'',
+		decode:''
+	}
+
+})
+
+</script>
+	</body>
+
+
+</html>
